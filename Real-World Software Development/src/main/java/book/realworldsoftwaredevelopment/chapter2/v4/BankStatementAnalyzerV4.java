@@ -1,6 +1,5 @@
 package book.realworldsoftwaredevelopment.chapter2.v4;
 
-import book.realworldsoftwaredevelopment.chapter2.v2.BankStatementCSVParserV2;
 import book.realworldsoftwaredevelopment.chapter2.v2.BankTransaction;
 import book.realworldsoftwaredevelopment.chapter2.v3.BankStatementProcessorV3;
 
@@ -14,7 +13,6 @@ import java.util.List;
 public class BankStatementAnalyzerV4 {
 
     private static final String RESOURCES = "src/main/resources/";
-    private static final BankStatementCSVParserV2 bankStatementParser = new BankStatementCSVParserV2();
 
     public void analyze(final String fileName, final BankStatementParser bankStatementParser) throws IOException {
         // 파일 읽기

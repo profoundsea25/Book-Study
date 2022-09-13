@@ -1,6 +1,6 @@
 package study.kotlinindepth.chapter4
 
-
+class Chapter4_1
 //class Person {
 //    var firstName: String = ""
 //    var familyName: String = ""
@@ -214,16 +214,16 @@ package study.kotlinindepth.chapter4
 //}
 
 
-fun main() {
-    var x = 1
-
-    class Counter {
-        fun increment() {
-            x++
-        }
-    }
-
-    Counter().increment()
-
-    println(x)
-}
+//fun main() {
+//    var x = 1
+//
+//    class Counter {
+//        fun increment() {
+//            x++
+//        }
+//    }
+//
+//    Counter().increment()
+//
+//    println(x)
+//}

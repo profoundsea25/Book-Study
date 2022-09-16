@@ -2,6 +2,9 @@ package study.kotlinindepth.chapter4
 
 import org.junit.jupiter.api.Test
 
+/**
+ * 4.2 널 가능성
+ */
 class Chapter4_2 {
 
     /**
@@ -102,8 +105,11 @@ class Chapter4_2 {
     /**
      * 4.2.3 널 아님 단언 연산자
      */
-    // 예시
-    val n = readLine()!!.toInt()
+    // 예시 (주석을 풀면 테스트가 안 됨. 클래스 필드 초기화가 안 되기 때문!)
+    @Test
+    fun nullAssertion() {
+        val n = readLine()!!.toInt()
+    }
 
     @Test
     fun nullTest() {
@@ -120,4 +126,83 @@ class Chapter4_2 {
         initialize()
         sayHello()
     }
+
+    /**
+     * 4.2.4 안전한 호출 연산자
+     */
+
+    // 아래에서는 정상 작동, but 이를 파이프로 연결하면 NPE 가능
+    fun readInt() = readLine()!!.toInt()
+
+    // 안전한 방법 (메서드에 ?를 붙인다)
+    fun readIntSafe() = readLine()?.toInt()
+
+    // 위의 함수는 다음과 같다.
+    fun readIntSafeExplain(): Int? {
+        val tmp = readLine()
+
+        return if (tmp != null) tmp.toInt() else null
+    }
+
+    // "수신 객체가 널이 아닌 경우에는 의미 있는 일을 하고, 수신 객체가 널인 경우에는 널을 반환하라"를 표현하면,
+    fun nullSafeCall() = println(readLine()?.toInt()?.toString(16))
+
+    // 안전한 호출 연산자가 널을 반환할 수 있으므로, 그 반환값 타입도 nullable 함을 인지하자.
+    @Test
+    fun nullSafeCallTest() {
+        val n = readInt() // Int?
+
+        if (n != null) {
+            println(n + 1)
+        } else {
+            println("No Value")
+        }
+    }
+
+
+    /**
+     * 엘비스 연산자
+     */
+    // 널이 될 수 없는 값을 다룰 때 유용한 연산자로 널 복합 연산자 ?:
+    // 널을 대신할 디폴트 값을 지정할 수 있음
+    fun sayHello(name: String?) {
+        println("Hello, " + (name ?: "Unknown"))
+    }
+
+    // sayHello는 아래와 같다.
+    fun sayHelloExplain(name: String?) {
+        println("Hello, " + (if (name != null) name else "Unknown"))
+    }
+
+    @Test
+    fun sayHelloTest() {
+        sayHello("John") // Hello, John
+        sayHello(null) // Hello, Unknown
+    }
+
+    // 입력이 널을 반호나할 경우 0에 n을 대입하는 예시
+    @Test
+    fun elvisTest() {
+        val n = readLine()?.toInt() ?: 0
+    }
+
+    // return이나 throw 같은 제어 흐름을 깨는 코드를 엘비스 연산자 오른쪽에 넣는 방법이 있다.
+    class Name(val firstName: String, val familyName: String?)
+
+    class Person(val name: Name?) {
+        fun describe(): String {
+            val currentName = name ?: return "Unknown"
+            return "${currentName.firstName} ${currentName.familyName}"
+        }
+    }
+
+    @Test
+    fun nameTest() {
+        println(Person(Name("John", "Doe")).describe()) // John Doe
+        println(Person(null).describe()) // Unknown
+    }
+
+    // 엘비스 연산자는 or 등의 중위 연산자와 in, !in 사이에 위치
+    // 비교/동등성 연자나 ||, && 대입보다 더 우선순위가 높다.
+
 }

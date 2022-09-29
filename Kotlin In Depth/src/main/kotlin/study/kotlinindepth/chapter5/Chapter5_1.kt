@@ -1,7 +1,6 @@
 package study.kotlinindepth.chapter5
 
 import org.junit.jupiter.api.Test
-import java.util.function.Consumer
 
 /**
  * 5.1 코틀린을 활용한 함수형 프로그래밍
@@ -181,5 +180,85 @@ class Chapter5_1 {
     /**
      * 5.1.3 람다와 익명 함수
      */
+
+    /* 함수형 타입의 구체적인 값을 만들려면? - 방법 1. 람다식 : 함수를 묘사하되 이름을 지정하지 않음.
+        - `{ result, op -> result + op }`
+        - = `{ 파라미터 목록 -> 람다식의 몸통(본문)이 되는 식이나 문의 목록 }`
+        - 반환 타입을 지정할 필요가 없다.
+        - 람다의 본문으로부터 반환 타입을 자동으로 추론
+        - 람다 본문에서 맨 마지막에 있는 식이 람다의 결괏값
+        - 람다의 파라미터 목록은 괄호로 둘러싸지 않는다.
+            - 파라미터를 괄호로 감싸면 구조 분해(destructuring) 선언이 된다.
+        - 람다가 함수의 마지막 파라미터인 경우, 함수를 호출할 때 인자를 둘러싸는 괄호 밖에 이 람다를 위치시킬 수 있다. (권장!)
+        - 람다에 인자가 없으면 화살표 기호(->)를 생략할 수 있다.
+        - 인자가 하나밖에 없는 람다를 특별히 단순화할 수 있다.
+            - 람다 인자가 하나인 경우에는 파라미터 목록과 화살표 기호를 생략 가능하다.
+            - 유일한 파라미터는 미리 정해진 it이라는 이름을 사용해 가리킬 수 있다.
+        - 람다의 파라미터 목록에서 사용하지 않는 람다 파라미터를 밑줄 기호(_)로 지정
+     */
+
+    fun singleParamLambda(s: String, condition: (Char) -> Boolean): Boolean {
+        for (c in s) {
+            if (!condition(c)) return false
+        }
+        return true
+    }
+
+    @Test
+    fun singleParamLambdaTest() {
+         println(singleParamLambda("Hello") { c -> c.isLetter() })
+         println(singleParamLambda("Hello") { it.isLowerCase() })
+    }
+
+    fun underBarParamLambda(s: String, condition: (Int, Char) -> Boolean): Boolean {
+        for (i in s.indices) {
+            if (!condition(i, s[i])) return false
+        }
+        return true
+    }
+
+    @Test
+    fun underBarParamLambdaTest() {
+        println(underBarParamLambda("Hello") { _, c -> c.isLetter() })
+        println(underBarParamLambda("Hello") { i, c -> i == 0 || c.isLowerCase() })
+    }
+
+    /* 함수형 타입의 구체적인 값을 만들려면? - 방법 2. 익명 함수
+        - 일반 함수와 차이점
+            - 1. 익명 함수에는 이름을 지정하지 않는다. fun 키워드 다음에 바로 파라미터 목록이 나온다.
+            - 2. 람다와 마찬가지로 문맥에서 파라미터 타입을 추론할 수 있으면 파라미터 타입을 지정하지 않아도 된다.
+            - 3. 함수 정의와 달리, 익명 함수는 식이기 때문에 인자로 함수를 넘기거나 변수에 대입하는 등 일반 값처럼 쓸 수 있다.
+                - 이는 객체 정의와 익명 객체 식의 관계와도 비슷하다.
+        - 람다와 달리 익명 함수에서는 반환 타입을 적을 수 있다.
+            - 함수 본문이 식인 경우에는 반환 타입을 생략할 수 있다. (컴파일러가 추론 가능하다.)
+            - 함수 본문이 블록인 경우(특히 함수 반환 타입이 Unit이 아닌 경우) 명시적으로 반환 타입을 지정해야 한다.
+        - 람다와 달리 익명 함수를 인자 목록의 밖으로 보낼 수는 없다.
+            - 즉, `function(param1, { lambda })` -> `function(param1) { lambda }` 변경 불가능
+        - 지역 함수와 마찬가지로 람다나 익명 함수도 클로저, 또는 자신을 포함하는 외부 선언에 정의된 변수에 접근할 수 있다.
+            - 특히 람다나 익명 함수도 외부 영역의 가변 변수 값을 변경할 수 있다.
+            - 자바 람다는 외부 변수의 값을 변경할 수 없다.
+    */
+
+    fun anonymousFuncSum(numbers: IntArray) = aggregate(numbers, fun(result, op): Int { return result + op })
+
+    fun outsideReferenceAnonyFunction(a: IntArray, action: (Int) -> Unit) {
+        for (n in a) {
+            action(n)
+        }
+    }
+
+    @Test
+    fun outsideReferTest() {
+        var sum = 0
+        outsideReferenceAnonyFunction(intArrayOf(1, 2, 3, 4)) {
+            sum += it
+        }
+        println(sum) // 10
+    }
+
+    /**
+     * 5.1.4 호출 가능 참조
+     */
+
 
 }

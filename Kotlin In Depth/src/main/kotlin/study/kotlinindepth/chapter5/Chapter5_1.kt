@@ -260,5 +260,63 @@ class Chapter5_1 {
      * 5.1.4 호출 가능 참조
      */
 
+    /* 호출 가능 참조 (callable reference)
+        - 이미 정의된 함수를 함숫값처럼 고차 함수에 넘기고 싶을 때 사용
+            - 물론 람다식으로 감싸서 넘길 수도 있다.
+        - 메서드 앞에 `::`를 붙여 메서드 참조임을 나타낸다.
+        - 호출 가능 참조를 만들 때는 함수 이름을 간단한 형태로만 써야 한다.
+            - 다른 패키지에 들어있는 함수의 호출 가능 참조를 만들려먼 먼저 함수를 임포트해야 한다.
+            - `::`을 클래스 이름 앞에 적용하면 클래스의 생성자에 대한 호출 가능 참조를 얻는다.
+        - 바인딩된 호출 가능 참조(bound callable reference)
+            - 주어진 클래스 인스턴스의 문맥 안에서 멤버 함수를 호출하고 싶을 때 사용
+     */
 
+    // 람다식으로 감싸서 넘기는 방법
+    fun referenceExam(s: String, condition: (Char) -> Boolean): Boolean {
+        for (c in s) {
+            if (!condition(c)) return false
+        }
+        return true
+    }
+
+    fun isCapitalLetter(c: Char) = c.isUpperCase() && c.isLetter()
+
+    @Test
+    fun referenceLambdaTest() {
+        println(referenceExam("Hello") { c -> isCapitalLetter(c) }) // false
+        println(referenceExam("Hello") { isCapitalLetter(it) }) // false
+    }
+
+    @Test
+    fun callableReferenceTest() {
+        println(referenceExam("Hello", ::isCapitalLetter)) // false
+    }
+
+    fun evalAtZero(f: (Int) -> Int) = f(0)
+    fun inc(n: Int) = n + 1
+    fun dec(n: Int) = n - 1
+
+    @Test
+    fun callableReferenceTest2() {
+        println(evalAtZero(::inc)) // 1
+        println(evalAtZero(::dec)) // -1
+    }
+
+    class Person(val firstName: String, val familyName: String) {
+        fun hasNameOf(name: String) = name.equals(firstName, ignoreCase = true)
+    }
+
+    @Test
+    fun callableReferenceTest3() {
+        val createPerson = ::Person
+        createPerson("John", "Doe")
+    }
+
+    @Test
+    fun boundCallableReferenceTest() {
+        val isJohn = Person("John", "Doe")::hasNameOf
+
+        println(isJohn("JOHN")) // true
+        println(isJohn("Jake")) // false
+    }
 }

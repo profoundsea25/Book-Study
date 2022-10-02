@@ -269,7 +269,26 @@ class Chapter5_1 {
             - `::`을 클래스 이름 앞에 적용하면 클래스의 생성자에 대한 호출 가능 참조를 얻는다.
         - 바인딩된 호출 가능 참조(bound callable reference)
             - 주어진 클래스 인스턴스의 문맥 안에서 멤버 함수를 호출하고 싶을 때 사용
+        - 특정 인스턴스와 바인딩하지 않고 멤버 함수를 가리키는 호출 가능 참조도 있다. -> 5.5절 참고
+        - 호출 가능 참조 자체는 오버로딩된 함수를 구분할 수 없다.
+            - 오버로딩된 함수 중 어떤 함수를 참조할지 명확히 하려면 컴파일러에게 타입을 지정해줘야 한다.
+        - 호출 가능 참조 뒤에 괄호를 바로 붙이는 문법은 예약되어 있다.
+            - 향후 괄호를 사용해 호출 가능 참조를 더 세분화할 수 있는 여지(구체적인 함수 지그니처를 지정)를 남기고자 함.
+            - 호출 가능 참조를 직접 호출하고 싶다면 참조 전체를 괄호로 둘러싼 다음에 인자를 지정해야 한다.
+        - 코틀린 프로퍼티에 대한 호출 가능 참조를 만들 수도 있다.
+            - 이런 참조 자체는 실제로는 함숫값이 아니고, 프로퍼티 정보를 담고 있는 리플렉션(reflection) 객체다.
+            - 이 객체의 getter 프로퍼티를 이용하면 게터 함수에 해당하는 함숫값에 접근할 수 있다.
+            - var 선언의 경우 리플렉션 객체의 setter 프로퍼티를 통해 세터 함수에 접근할 수 있다.
+        - 현재는 지역 변수에 대한 호출 가능 참조를 지원하지 않음. (향후 추가 될 수 있음)
      */
+
+    /*  차이점 : 코틀린 호출 가능 참조 vs 자바 8 메서드 참조
+        - 1. 자바에는 없는 종류의 선언을 코틀린이 지원하기 때문에 호출 가능 참조는 자바의 메서드 참조보다 종류가 더 많다.
+        - 2. 코틀린의 호출 가능 참조는 일급 시민 식이지만, 자바의 메서드 참조는 함수형 인터페이스 내에서만 의미가 있다.
+            - 즉, 자바의 메서드 참조에는 정해진 타입이 없다.
+        - 3. 호출 가능 참조는 단순히 함숫값만이 아니라,
+             런타임에 함수나 프로퍼티의 속성(애프리뷰트)를 얻을 때 사용할 수 있는 리플렉션 객체이기도 하다.
+    */
 
     // 람다식으로 감싸서 넘기는 방법
     fun referenceExam(s: String, condition: (Char) -> Boolean): Boolean {
@@ -318,5 +337,88 @@ class Chapter5_1 {
 
         println(isJohn("JOHN")) // true
         println(isJohn("Jake")) // false
+    }
+
+    @Test
+    fun overloadingCallableReferenceTest() {
+        fun max(a: Int, b: Int) = if (a > b) a else b
+        fun max(a: Double, b: Double) = if (a > b) a else b
+        val f: (Int, Int) -> Int = ::max // OK
+//        val g = ::max // error: overload resolution ambiguity
+    }
+
+    @Test
+    fun callableReferenceBraketTest() {
+        fun max(a: Int, b: Int) = if (a > b) a else b
+
+        println((::max)(1,2)) // 2
+//        println(::max(1,2)) // error : this syntax is reserved for future use
+    }
+
+    @Test
+    fun kotlinPropertyCallableReferenceTest() {
+        class Person(var firstName: String, var familyName: String)
+
+        val person = Person("John", "Doe")
+        val readName = person::firstName.getter // 게터 참조
+        val writeFamily = person::familyName.setter // 세터 참조
+
+        println(readName()) // John
+        writeFamily("Smith")
+        println(person.familyName) // Smith
+    }
+
+    /**
+     * 5.1.5 인라인 함수와 프로퍼티
+     */
+
+    /* 인라인(inline) 기법
+        - 고차 함수와 함숫값을 사용하면 함수가 객체로 표현되기 때문에 성능 차원에서 부가 비용이 발생한다.
+            - 또한 익명 함수나 람다가 외부 영역의 변수를 참조하면 고차 함수에 함숫값을 넘길 때마다
+              이런 외부 영역의 변수를 포획할 수 있는 구조도 만들어서 넘겨야 한다.
+            - 함숫값을 호출할 때는 컴파일러가 함숫값의 정적인 타입을 알 수 없기 때문에
+              동적으로 가상 호출을 사용해 어떤 함수 구현을 사용할지 디스패치해야 한다.
+        - inline 기법
+            - 위와 같은 함숫값을 사용할 때 발생하는 런탕미 비용을 줄이기 위한 해법
+            - 기본적인 아니디어는 함숫값을 사용하는 고차 함수를 호출하는 부분을 해당 함수의 본문으로 대헤하는 인라인 기법을 사용
+            - 인라인이 될 수 있는 함수를 구별하기 위해 프로그래머는 `inline` 변경자를 함수 앞에 붙인다.
+        - 인라인 함수를 쓰면 컴파일된 코드의 크기가 커지지만, 지혜롭게 사용하면 성능을 크게 높일 수 있다.
+            - 특히 함수가 상대적으로 작은 경우 성능이 크게 향상된다.
+            - 코틀린 표준 라이브러리가 제공하는 여러 고차 함수 중 상당수가 실제로 인라인 함수다.
+        - 다른 언어(C++)와 달리, 코틀린의 inline 변경자는 컴파일러가 상황에 따라 무시해도 되는 최적화를 위한 힌트가 아니다.
+            - inline이 붙은 코틀린 함수는 가능하면 항상 인라인이 된다.
+            - 인라인이 불가능한 경우에는 컴파일 오류로 간주된다.
+        - 인라인이 될 수 있는 람다를 사용해 할 수 있는 일은 몇 가지로 제한된다.
+            - 1. 람다를 호출하는 경우
+            - 2. 다른 인라인 함수에 인라인이 되도록 넘기는 경우
+            - 인라인 함수는 실행 시점에 별도의 존재가 아니므로 변수에 저장되거나 인라인 함수가 아닌 함수에 전달될 수 없다.
+     */
+
+    inline fun indexOf(numbers: IntArray, condition: (Int) -> Boolean): Int {
+        for (i in numbers.indices) {
+            if (condition(numbers[i])) return i
+        }
+        return -1
+    }
+
+    @Test
+    fun inlineTest() {
+        println(indexOf(intArrayOf(4,3,2,1)) { it < 3 }) // 2
+    }
+
+    // 위의 함수(`indexOf`)는 아래와 같이 번역된다.
+    @Test
+    fun nonInlineTest() {
+        val numbers = intArrayOf(4,3,2,1)
+        var index = -1
+
+        for (i in numbers.indices) {
+            if (numbers[i] < 3) {
+                index = i
+                break
+            }
+        }
+
+        println(index)
     }
 }

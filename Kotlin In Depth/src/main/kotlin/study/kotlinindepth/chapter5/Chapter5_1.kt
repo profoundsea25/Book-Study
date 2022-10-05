@@ -372,6 +372,7 @@ class Chapter5_1 {
      * 5.1.5 인라인 함수와 프로퍼티
      */
 
+    // TODO:복습 필요, 내용 이해가 쉽지 않음
     /* 인라인(inline) 기법
         - 고차 함수와 함숫값을 사용하면 함수가 객체로 표현되기 때문에 성능 차원에서 부가 비용이 발생한다.
             - 또한 익명 함수나 람다가 외부 영역의 변수를 참조하면 고차 함수에 함숫값을 넘길 때마다
@@ -392,6 +393,22 @@ class Chapter5_1 {
             - 1. 람다를 호출하는 경우
             - 2. 다른 인라인 함수에 인라인이 되도록 넘기는 경우
             - 인라인 함수는 실행 시점에 별도의 존재가 아니므로 변수에 저장되거나 인라인 함수가 아닌 함수에 전달될 수 없다.
+            - 마찬가지 이유로 인라인 함수가 널이 될 수 있는 함수 타입의 인자를 받을 수도 없다.
+                - 이 경우 특정 람다를 인라인하지 말라고 파라미터 앞에 noinline 변경자를 붙일 수 있다.
+        - 어떤 함수에 인라인할 수 있는 파라미터가 없다면
+            - 이 함수를 호출한 지점을 함수 본문으로 대치해도 런타임에 크게 이득이 없다.
+            - 보통 이런 함수는 인라인할 가치가 없는 것으로 여겨 코틀린 컴파일러는 경고를 표시한다.
+        - 공개 인라인 함수에 비공개 멤버를 넘기려고 하면
+            - 인라인 함수의 본문이 호출 지점을 대신한다.
+            - 외부에서 캡슐화를 깰 수 있게 된다.
+            - 비공개 코드가 외부로 노출되는 일을 방지하기 위해 코틀린은 인라인 함수에 비공개 멤버를 전달하는 것을 금지한다.
+        - 프로퍼티 접근자도 인라인이 가능하다.
+            - 이 기능을 사용하면 함수 호출을 없애기 때문에 프로퍼티를 읽고 쓰는 성능을 향상시킬 수 있다.
+        - 프로퍼티 자체에 inline 변경자를 붙일 수도 있다.
+            - 이렇게 하면 컴파일러가 게터와 (프로퍼티가 가변 프로퍼티인 경우) 세터를 모두 인라인해준다.
+            - 프로퍼티에 대한 인라인은 뒷받침하는 필드가 없는 프로퍼티에 대해서만 가능하다.
+            - 함수와 비슷하게 프로퍼티가 공개 프로퍼티인 경우,
+              프로퍼티의 게터나 세터 안에서 비공개 선언을 참조하면 인라인이 불가능하다.
      */
 
     inline fun indexOf(numbers: IntArray, condition: (Int) -> Boolean): Int {
@@ -418,7 +435,51 @@ class Chapter5_1 {
                 break
             }
         }
-
         println(index)
     }
+
+    var lastAction: () -> Unit = {}
+
+    inline fun inlineMethodCannotBeInVar(action: () -> Unit) {
+        action()
+//        lastAction = action // Error
+    }
+
+//    inline fun inlineMethodCannotBeNullable(a: IntArray, action: ((Int) -> Unit)?) {
+//        if (action == null) return
+//        for (n in a) action(n)
+//    }
+
+    inline fun inlineMethodCannotBeNullable(a: IntArray, noinline action: ((Int) -> Unit)?) {
+        if (action == null) return
+        for (n in a) action(n)
+    }
+
+    class InlinePrivateTestClass(private val firstName: String, private val familyName: String) {
+        inline fun sendMessage(message: () -> String) {
+//            println("$firstName $familyName: ${message()}") // Error
+        }
+    }
+
+    class InlineGetterAndSetterTestClass(var firstName: String, var familyName: String) {
+        var fullName
+        inline get() = "$firstName $familyName" // inline 게터
+        set(value) {} // inline 이 아닌 세터
+    }
+
+    class InlinePropertyTestClass(var firstName: String, var familyName: String) {
+        inline var fullName // inline 게터와 세터
+            get() = "$firstName $familyName"
+            set(value) {}
+    }
+
+//    class InlinePrivatePropertyTestClass(private val firstName: String, private val familyName: String) {
+//        inline var age = 0 // Error : Property has a backing field
+//        // Error: firstName and familyName are private
+//        inline val fullName get() = "$firstName $familyName"
+//    }
+
+    /**
+     * 5.1.6 비지역적 제어 흐름
+     */
 }

@@ -2,13 +2,15 @@ package study.modern_java_in_action.part1.chapter1;
 
 import org.junit.jupiter.api.Test;
 import study.modern_java_in_action.model.Apple;
+import study.modern_java_in_action.model.Color;
 
-import java.awt.*;
 import java.io.File;
 import java.io.FileFilter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Predicate;
+
+import static study.modern_java_in_action.model.Color.*;
 
 /**
  * Chapter 1. 자바 8, 9, 10, 11 : 무슨 일이 일어나고 있는가?
@@ -143,7 +145,7 @@ public class Chapter1 {
         List<Apple> result = new ArrayList<>();
 
         for (Apple apple : inventory) {
-            if (Color.GREEN.equals(apple.getColor())) {
+            if (GREEN.equals(apple.getColor())) {
                 result.add(apple);
             }
         }
@@ -163,7 +165,7 @@ public class Chapter1 {
 
     // 자바 8 이후
     public static boolean isGreenAppleAfterJava8(Apple apple) {
-        return Color.GREEN.equals(apple.getColor());
+        return GREEN.equals(apple.getColor());
     }
 
     public static boolean isHeavyAppleAfterJava8(Apple apple) {
@@ -183,7 +185,7 @@ public class Chapter1 {
 
     @Test
     void callMethodAfterJava8Example() {
-        List<Apple> inventory = new ArrayList<>();
+        List<Apple> inventory = Apple.exampleAppleList();
         filterApplesAfterJava8(inventory, Chapter1::isGreenAppleAfterJava8);
         filterApplesAfterJava8(inventory, Chapter1::isHeavyAppleAfterJava8);
     }
@@ -199,8 +201,8 @@ public class Chapter1 {
 
     @Test
     void useLambdaExample() {
-        List<Apple> inventory = new ArrayList<>();
-        filterApplesAfterJava8(inventory, (Apple a) -> Color.GREEN.equals(a.getColor()));
+        List<Apple> inventory = Apple.exampleAppleList();
+        filterApplesAfterJava8(inventory, (Apple a) -> GREEN.equals(a.getColor()));
         filterApplesAfterJava8(inventory, (Apple a) -> a.getWeight() > 150);
         filterApplesAfterJava8(inventory, (Apple a) -> a.getWeight() < 80 || Color.RED.equals(a.getColor()));
     }
@@ -250,4 +252,11 @@ public class Chapter1 {
     /**
      * 1.6 함수형 프로그래밍에서 가져온 다른 유용한 아이디어
      */
+
+    /* `Optional<T>`
+        - NullPointer 예외를 피할 수 있도록 도와주는 클래스
+        - `Optional<T>`는 값을 갖거나 갖지 않을 수 있는 컨테이너 객체다.
+        - 값이 없는 상황을 어떻게 처리할지 명시적으로 구현하는 메서드를 포함하고 있다.
+     */
+
 }

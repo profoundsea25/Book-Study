@@ -482,4 +482,90 @@ class Chapter5_1 {
     /**
      * 5.1.6 비지역적 제어 흐름
      */
+    /* 비지역적 제어 흐름 (return)
+        - 고차 함수를 사용하면 `return` 문 등과 같이 일반적인 제어 흐름을 깨는 명령을 사용할 때 문제가 생긴다.
+            - `return` 문은 디폴트로 자신을 둘러싸고 있는 fun, get, set 으로 정의된 가장 안쪽 함수로부터 제어 흐름을 반환시킨다.
+            - JVM 에서는 람다가 효율적으로 자신을 둘러싸고 있는 함수를 반환시킬 방법이 없으므로 이를 금지한다.
+            - 이 경우 해결 방법은 람다 대신 익명 함수를 사용하는 것이다.
+        - 람다 자체로부터 제어 흐름을 반환하고 싶다면 `return` 문에 문맥 이름을 추가해야 한다.
+            - 일반적으로 함수 리터럴 식에 이름을 붙여서 문맥 이름을 만들 수 있다.
+            - 이런 한정시킨 `return`을 일반 함수에서도 사용할 수 있다. (불필요한 중복인 경우가 많다.)
+        - 람다가 인라인될 경우에는 인라인된 코드를 둘러싸고 있는 함수에서 반환할 때 return 문을 사용할 수 있다.
+            - 고차 함수가 인라인 함수라면 고차 함수를 호출하는 코드를 고차 함수 본문과 람다 본문으로 대체하기 때문에 가능하다.
+            - 고차 함수가 인라인이 될 수 있는 람다를 받는데,
+              이 고차 함수의 본문에서 람다를 직접 호출하지는 않고 지역 함수나 지역 클래스의 메서드 등의 다른 문맥에서 간접적으로 호출할 수 있다.
+                - 이 경우에도 람다를 인라인할 수는 있다.
+            - 그러나 인라인을 한 이후 람다에서 사용하는 `return`문이 고차 함수를 호출하는 쪽의 함수를 반환시킬 수는 없다.
+                - 인라인을 했음에도 불구하고 람다의 `return`과 람다를 실행하주는 함수가 서로 다른 실행 스택 프레임을 차지하기 떄문이다.
+                - 따라서 이런 식으로 함수 파라미터를 호출하는 일은 디폴트로 금지되어 있다.
+                - 이런 호출을 허용하려면 함수형 파라미터 앞에 `crossinline` 변경자를 붙여야 한다.
+                - 함숫값을 인라인시키도록 남겨두는 대신 람다 안에서 비지역 `return`을 사용하지 못하게 막는 역할을 한다.
+        - `break`이나 `continue`를 쓸 때도 비지역적 제어 흐름을 만들어 낼 수 있다.
+            - 이런 경우 `break`이나 `continue`는 람다를 둘러싼 루프를 대상으로 제어 흐름을 변경하게 된다.
+            - 현재는 람다가 인라인되더라도 이런 비지역적 `break`이나 `continue`를 사용하지 못한다.
+     */
+    @Test
+    fun nonLocalControlTest() {
+        fun forEach(a: IntArray, action: (Int) -> Unit) {
+            for (n in a) action(n)
+        }
+
+        // 람다 : 불가능
+        forEach(intArrayOf(1, 2, 3, 4)) {
+//            if (it < 2 || it > 3) return // error : nonLocalControlTest 메서드를 종료시킴
+            println(it)
+        }
+
+        // 익명 함수 : 가능
+        forEach(intArrayOf(1,2,3,4), fun(it: Int) {
+            if (it < 2 || it > 3) return
+            println(it)
+        })
+
+        // 문맥 이름 붙이기
+        val action: (Int) -> Unit = myFun@{
+            if (it < 2 || it > 3) return@myFun
+            println(it)
+        }
+
+        // 람다 : 문맥 이름 붙이기
+        forEach(intArrayOf(1, 2, 3, 4)) {
+            if (it < 2 || it > 3) return@forEach
+            println(it)
+        }
+
+        // 인라인 람다
+        forEachInline(intArrayOf(1, 2, 3, 4)) {
+            if (it < 2 || it > 3) return
+            println(it)
+        }
+
+        // 크로스 인라인 람다
+        forEachCrossInline(intArrayOf(1, 2, 3, 4)) {
+//            if (it < 2 || it > 3) return // Error
+            println(it)
+        }
+    }
+
+    inline fun forEachInline(a: IntArray, action: (Int) -> Unit) {
+        for (n in a) action(n)
+    }
+
+//    inline fun forEachInlineError(a: IntArray, action: (Int) -> Unit) = object {
+//        for run() {
+//            for (n in a) {
+//                action(n) // Error
+//            }
+//        }
+//    }
+
+    inline fun forEachCrossInline(a: IntArray, crossinline action: (Int) -> Unit) = object {
+        fun run() {
+            for (n in a) {
+                action(n)
+            }
+        }
+    }
+
+
 }

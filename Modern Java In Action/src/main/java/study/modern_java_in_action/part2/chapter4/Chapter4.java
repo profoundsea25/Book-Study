@@ -206,4 +206,52 @@ public class Chapter4 {
     /**
      * 4.4 스트림 연산
      */
+
+    /* 연산의 종류
+        - 중간 연산(intermediate operation) : 연결할 수 있는 스트림 연산
+        - 최종 연산(terminal operation) : 스트림을 닫는 연산
+    */
+
+    /* 4.4.1 중간 연산
+        - 중간 연산은 다른 스트림을 반환한다.
+            - 따라서 중간 연산을 연결해서 질의를 만들 수 있다.
+        - 중간 연산의 중요한 특징은 단말 연산을 스트림 파이프라인에 실행하기 전까지는 아무 연산도 수행하지 않는다는 것이다.
+            - 즉, 게으르다.(lazy)
+            - 중간 연산을 합친 다음에 합쳐진 중간 연산을 최종 연산으로 한 번에 처리하기 때문이다.
+        - 게으르기 때문에 얻는 최적화 효과들
+            - 쇼트서킷 -> 추후 5장에서 설명
+            - 루프 퓨전(loop fusion) : 다른 연산이 한 과정으로 병합되는 것
+        - `filter`, `map`, `limit`, `sorted`, `distinct` ...
+     */
+
+    @Test
+    void intermediateOperationTest() {
+        List<Dish> menu = Dish.exampleDishList();
+
+        List<String> names = menu.stream()
+                .filter(dish -> {
+                    System.out.println("filtering:" + dish.getName());
+                    return dish.getCalories() > 300;
+                })
+                .map(dish -> {
+                    System.out.println("mapping:" + dish.getName());
+                    return dish.getName();
+                })
+                .limit(3)
+                .collect(Collectors.toList());
+        System.out.println(names);
+    }
+
+    /* 4.4.2 최종 연산
+        - 최종 연산은 스트림 파이프라인에서 결과를 도출한다.
+     */
+
+    /* 4.4.3 스트림 이용하기
+        - 스트림 이용 과정
+            - 1. 질의를 수행할 (컬렉션 같은) 데이터 소스
+            - 2. 스트림 파이프라인을 구성할 중간 연산 연결
+            - 3. 스트림 파이프라인을 실행하고 결과를 만들 최종 연산
+        - 스트림 파이프라인의 개념은 빌더 패턴과 비슷하다.
+        - `forEach`, `count`, `collect` ...
+     */
 }

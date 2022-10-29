@@ -23,6 +23,8 @@ dependencies {
     compileOnly 'org.projectlombok:lombok:1.18.24'
     annotationProcessor 'org.projectlombok:lombok:1.18.24'
     implementation 'org.springframework.boot:spring-boot-starter-test:2.7.4'
+    implementation 'org.openjdk.jmh:jmh-core:1.17.4'
+    implementation 'org.openjdk.jmh:jmh-generator-annprocess:1.17.4'
 }
 
 tasks.named('test') {

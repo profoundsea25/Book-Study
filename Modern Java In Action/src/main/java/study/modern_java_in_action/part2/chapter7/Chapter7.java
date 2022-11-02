@@ -3,12 +3,15 @@ package study.modern_java_in_action.part2.chapter7;
 import org.junit.jupiter.api.Test;
 import org.openjdk.jmh.annotations.*;
 
+import java.util.Spliterator;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.ForkJoinTask;
 import java.util.concurrent.RecursiveTask;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.IntStream;
 import java.util.stream.LongStream;
 import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 /**
  * Chapter 7. 병렬 데이터 처리와 성능
@@ -369,6 +372,75 @@ public class Chapter7 {
      */
 
     /* 7.3.1 분할 과정
-        -
+        - `trySplit`을 재귀적으로 호출하여, `null`이 반환될 때까지 반복한다.
+            - `null`이 아니라는 것은 스트림이 또 다른 `Spliterator` 스트림으로 분할되었다는 것을 의미한다.
+            - `null`이라는 것은 더 이상 자료구조를 분할할 수 없음을 의미한다.
+        - 이 분할과정은 `Spliterator`의 특성을 정의하는 `characteristics` 메서드에 의해 영향을 받는다.
      */
+
+    /* Spliterator 특성
+        - 추상 메서드 `characteristics`
+            - `Spliterator` 자체의 특성 집합을 포함하는 `int`를 반환한다.
+            - 특성에 대한 상세 내용은 책 p.265 참고
+     */
+
+    /* 7.3.2 커스텀 Spliterator 구현하기
+
+     */
+    final String SENTENCE = "Nel     mezzo del cammin di nostra vita " +
+            "mi ritrovai in una  selva oscura " +
+            "ch   la dritta via era  smarrita ";
+
+    public int countWordsIteratively(String s) {
+        int counter = 0;
+        boolean lastSpace = true;
+        for (char c : s.toCharArray()) {
+            if (Character.isWhitespace(c)) {
+                lastSpace = true;
+            } else {
+                if (lastSpace) {
+                    counter++;
+                }
+                lastSpace = false;
+            }
+        }
+        return counter;
+    }
+
+    @Test
+    void stringCounterTest_1() {
+        System.out.println("Found " + countWordsIteratively(SENTENCE) + " words");
+    }
+
+    // 함수형으로 단어 수를 세는 메서드 재구현하기
+    // `WordCounter` 클래스 참조
+    public int countWords(Stream<Character> stream) {
+        WordCounter wordCounter = stream.reduce(
+                new WordCounter(0, true),
+                WordCounter::accumulate,
+                WordCounter::combine);
+        return wordCounter.getCounter();
+    }
+
+    @Test
+    void stringCounterTest_2() {
+        Stream<Character> stream = IntStream.range(0, SENTENCE.length())
+                .mapToObj(SENTENCE::charAt);
+        System.out.println("Found " + countWords(stream) + " words");
+    }
+
+    /* `WordCounter` 병렬로 수행하기
+        - 그냥 `parallel()`을 호출하면 문제가 되는 이유
+            - 분할할 때, 임의의 위치에서 분할하기 때문에, 한 단어가 둘로 쪼개지는 현상이 발생
+            - 즉 스트림 분할 위치에 따라 잘못된 결과가 나올 수 있다.
+        - 단어가 끝나는 위치에서 분할하려면? `WordCounterSpliterator` 구현하기
+     */
+
+    @Test
+    void stringCounterTest_3() {
+        Spliterator<Character> spliterator = new WordCounterSpliterator(SENTENCE);
+        Stream<Character> stream = StreamSupport.stream(spliterator, true);
+        System.out.println("Found " + countWords(stream) + " words");
+    }
+
 }

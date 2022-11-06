@@ -302,7 +302,6 @@ public class Chapter9 {
         - `OnlineBanking` 예제
         - 알고리즘의 개요를 제시한 다음에 알고리즘의 일부를 고칠 수 있는 유연함을 제공해야 할 때 템플릿 메서드 디자인 패턴을 사용
             - "이 알고리즘을 사용하고 싶은데 그대로는 안 되고 조금 고처야 하는" 상황에 적합
-
      */
     @Test
     void templateMethodPatternTest() {

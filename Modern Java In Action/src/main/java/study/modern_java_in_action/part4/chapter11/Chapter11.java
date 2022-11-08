@@ -5,8 +5,15 @@ import study.modern_java_in_action.part4.chapter11.ex_11_1.Car1;
 import study.modern_java_in_action.part4.chapter11.ex_11_1.Insurance1;
 import study.modern_java_in_action.part4.chapter11.ex_11_1.Person1;
 import study.modern_java_in_action.part4.chapter11.ex_11_2.Car2;
+import study.modern_java_in_action.part4.chapter11.ex_11_2.Insurance2;
+import study.modern_java_in_action.part4.chapter11.ex_11_2.Person2;
 
+import javax.swing.text.html.Option;
+import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Chapter 11. null 대신 Optional 클래스
@@ -124,7 +131,151 @@ public class Chapter11 {
     }
 
     /* 11.3.2 맵으로 Optional의 값을 추출하고 변환하기
-        - 보통 객체의 정보를 추출할 때는 `Optional`을 사용할 때가 많다.
+        - `Optional.map()`
+            - `Optional`의 정보를 추출할 때 사용
+            - `Optional`이 값을 포함하면 map의 인수로 제공된 함수가 값을 바꾼다.
+            - `Optional`이 비어있으면 아무 일도 일어나지 않는다.
+     */
+    @Test
+    void optionalMapExample() {
+        // optional 이 없으면
+        String name = null;
+        Insurance1 insurance1 = new Insurance1();
+        if (insurance1 != null) {
+            name = insurance1.getName();
+        }
+
+        // optional 이 있으면
+        Insurance2 insurance2 = new Insurance2();
+        Optional<Insurance2> optInsurance = Optional.ofNullable(insurance2);
+        Optional<String> optName = optInsurance.map(Insurance2::getName);
+    }
+
+    /* 11.3.3 `flatMap`으로 `Optional` 객체 연결
+        - `flatMap`은 인수로 받은 `Optional`의 콘텐츠만 남겨 하나의 `Optional`만 남긴다.
+            - null을 확인하느라 조건 분기문을 추가해서 코드를 복잡하게 만들지 않으면서도 쉽게 이해하는 코드를 완성시킬 수 있다.
+        - `Optional`인수로 받거나 `Optional`을 반환하는 메서드를 정의한다면 결과적으로 이 메서드를 사용하는 모든 사람에게
+          이 메서드가 빈 값을 받거나 빈 결과를 반환할 수 있음을 잘 문서화해서 제공하는 것과 같다.
+        - `flatMap`을 빈 `Optional`에 호출하면 아무 일도 일어나지 않고 그대로 반환된다.
+            - 호출 체인 중 어떤 메서드가 빈 `Optional`을 반환하다면 전체 결과로 빈 `Optional`을 반환하고
+              아니면 관련 보험회사의 이름을 포함하는 `Optional`를 반환한다.
+        - `orElse`는 `Optional`이 비어있을 때 기본값을 제공한다.
+            - `Optional`에 값이 있다면 그 값을 반환한다.
+     */
+    public String getCarInsuanceName(Optional<Person2> person) {
+        return person.flatMap(Person2::getCar)
+                .flatMap(Car2::getInsurance)
+                .map(Insurance2::getName)
+                .orElse("Unknown");
+
+    }
+
+    /* 도메인 모델에 `Optional`을 사용했을 때 데이터를 직렬화할 수 없는 이유
+        - `Optional`은 선택형 반환값을 지원하는 것이다.
+        - `Optional` 클래스는 필드 형식으로 사용할 것을 가정하지 않았으므로 `Serializable` 인터페이스를 구현하지 않는다.
+            - 따라서 직렬화를 사용한다면 문제가 생길 수 있다.
+        - 그럼에도 불구하고 여전히 `Optional`를 사용하는 것이 바람직하다.
+            - 특히 객체 그래프에서 일부 또는 전체 객체가 null일 수 있는 상황이라면 더욱 그렇다.
+     */
+
+    /* 11.3.4 Optional 스트림 조작
+        - `Optional`을 포함하는 스트림을 쉽게 처리할 수 있도록 `Optional`에 `stream()` 메서드를 추가했다.
+            - `Optional` 스트림을 값을 가진 스트림으로 변환할 때 이 기능을 유용하게 활용할 수 있다.
+        - `Optional`이 비어있는지 아닌지에 따라 `Optional`을 0개 이상의 항목을 포함하는 스트림으로 변환한다.
+            - 한 단계의 연산으로 값을 포함하는 `Optional`을 언랩하고 비어있는 `Optional`은 건너뛸 수 있다.
+     */
+    public Set<String> getCarInsuranceNames(List<Person2> persons) {
+        return persons.stream()
+                .map(Person2::getCar)
+                .map(optCar -> optCar.flatMap(Car2::getInsurance))
+                .map(optIns -> optIns.map(Insurance2::getName))
+
+//                // Stream에 결과가 비어있을수도 있다.
+//                .filter(Optional::isPresent)
+//                .map(Optional::get)
+//                .collect(Collectors.toSet());
+
+                // 위의 주석된 코드를 아래와 같이 줄일 수 있다.
+                .flatMap(Optional::stream)
+                .collect(Collectors.toSet());
+    }
+
+    /* 디폴트 액션과 `Optional` 언랩
+        - `orElse()`
+            - 빈 `Optional`인 상황에서 기본값을 반환
+        - `get()`
+            - 값을 읽는 가장 간단한 메서드면서 동시에 가장 안전하지 않은 메서드
+            - 래핑된 값이 있으면 해당 값을 반환하고 값이 없으면 `NoSuchElementException` 발생
+            - 따라서 `Optional`에 값이 반드시 있다고 가정할 수 있는 상황이 아니면 get 메서드를 사용하지 않는 것이 바람직
+        - `orElseGet(Supplier<? extends T> other)`
+            - `orElse`에 대응하는 게으른 버전
+            - `Optional`이 값이 없을 때만 `Supplier` 실행
+        - `orElseThrow(Supplier<? extends X> ExceptionSupplier`
+            - `Optional`이 비어있을 때 예외를 발생시킴. 발생시킬 예외의 종류 선택 가능
+        - `ifPresent(Consumer<? super T> consumer)`
+            - 값이 존재할 때 인수로 넘겨준 동작을 실행할 수 있음. 값이 없으면 아무 일도 일어나지 않음.
+        - `ifPresentOrElse(Consumer<? super T> action, Runnable emptyAction`
+            - `Optional`이 비었을 때 실행할 수 있는 `Runnable`을 인수로 받는다는 점만 `ifPresent`와 다름
+     */
+
+    /* 11.3.6 두 Optional 합치기
+        - `Optional` 메서드를 이용해 중첩하여 한 줄로 만들기
+     */
+    public Insurance2 findCheapestInsurance(Person2 person, Car2 car) {
+        // 다양한 보험회사가 제공하는 서비스 조회
+        // 모든 결과 데이터 비교
+        Insurance2 cheaptestCompany = new Insurance2();
+        return cheaptestCompany;
+    }
+
+    public Optional<Insurance2> nullSafeFindCheapestInsurace(Optional<Person2> person, Optional<Car2> car) {
+        if (person.isPresent() && car.isPresent()) { // null 체크 코드와 다를 바 없다.
+            return Optional.of(findCheapestInsurance(person.get(), car.get()));
+        } else {
+            return Optional.empty();
+        }
+    }
+
+    public Optional<Insurance2> nullSafeFindCheapestInsuraceRefactoring(Optional<Person2> person, Optional<Car2> car) {
+        return person.flatMap(p -> car.map(c -> findCheapestInsurance(p, c)));
+    }
+
+    /* 11.3.7 필터로 특정값 거르기
+        - `filter`
+            - 프레디케이드를 인수로 받는다.
+            - `Optional` 객체가 값을 가지며 프레디케이트와 일치하면 `filter` 메서드는 그 값을 반환하고,
+              그렇지 않으면 빈 `Optional` 객체를 반환한다.
+            - `Optional`이 비어있다면 아무런 연산을 하지 않는다.
+            - 프레디케이트 적용 결과가 true면 `Optional`에 아무 변화가 없으며,
+              결과가 false면 값은 사라져버리고 `Optional`은 빈 상태가 된다.
+     */
+    @Test
+    void optionalFilterExample() {
+        // 보험회사 이름이 CambridgeInsurance 인지 확인하는 코드
+        Insurance2 insurance = new Insurance2();
+        if (insurance != null && "CambridgeInsurance".equals(insurance.getName())) {
+            System.out.println("ok");
+        }
+
+        // Optional.filter 활용
+        Optional<Insurance2> optInsurance = Optional.of(insurance);
+        optInsurance.filter(ins ->
+                "CambridgeInsurance".equals(ins.getName()))
+                .ifPresent(x -> System.out.println("ok"));
+    }
+
+    public String getCarInsuranceName(Optional<Person2> person, int minAge) {
+        return person
+                .filter(p -> p.getAge() >= minAge)
+                .flatMap(Person2::getCar)
+                .flatMap(Car2::getInsurance)
+                .map(Insurance2::getName)
+                .orElse("Unknown");
+    }
+
+
+    /**
+     * `Optional`을 사용한 실용 예제
      */
 
 }

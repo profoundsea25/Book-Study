@@ -1,5 +1,6 @@
 package study.modern_java_in_action.part4.chapter11;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import study.modern_java_in_action.part4.chapter11.ex_11_1.Car1;
 import study.modern_java_in_action.part4.chapter11.ex_11_1.Insurance1;
@@ -9,11 +10,11 @@ import study.modern_java_in_action.part4.chapter11.ex_11_2.Insurance2;
 import study.modern_java_in_action.part4.chapter11.ex_11_2.Person2;
 
 import javax.swing.text.html.Option;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Chapter 11. null 대신 Optional 클래스
@@ -275,7 +276,78 @@ public class Chapter11 {
 
 
     /**
-     * `Optional`을 사용한 실용 예제
+     * 11.4 `Optional`을 사용한 실용 예제
      */
+
+    /* 11.4.1 잠재적으로 null이 될 수 있는 대상을 Optional로 감싸기
+
+     */
+    @Test
+    void optionalExample_11_4_1() {
+        Map<String, Object> map = new HashMap<>();
+
+        Object value = map.get("key");
+        // "key" 가 없으면 null 반환
+
+        // 아래와 같이 바꿔 쓸 수 있다.
+        Optional<Object> optValue = Optional.ofNullable(map.get("key"));
+    }
+
+    /* 11.4.2 예외와 Optional 클래스
+        - ex. `Integer.parseInt()`를 Optional을 반환하도록 만들기
+            - try/catch 블록을 없애고 사용할 수 있다.
+     */
+    public static Optional<Integer> stringToInt(String s) {
+        try {
+            return Optional.of(Integer.parseInt(s));
+        } catch (NumberFormatException e) {
+            return Optional.empty();
+        }
+    }
+
+    /* 11.4.3 기본형 Optional을 사용하지 말아야 하는 이유
+        - `OptionalInt`, `OptionalLog`, `OptionalDouble` 등이 있다.
+            - 스트림과 다르게 `Optional`의 최대 요소는 하나이므로 기본형 특화 클래스로 성능을 개선할 수 없다.
+        - 기본형 특화 `Optional`은 map, flatMap, filter 등을 지원하지 않는다.
+        - 스트림과 마찬가지로 기본형 특화 Optional로 생성한 결과는 다른 일반 Optional과 혼용할 수 없다.
+     */
+
+    /* 11.4.4 응용
+
+     */
+    @Test
+    void optionalExample_11_4_4() {
+        Properties props = new Properties();
+        props.setProperty("a", "5");
+        props.setProperty("b", "true");
+        props.setProperty("c", "-3");
+
+        assertEquals(5, readDuration(props, "a"));
+        assertEquals(0, readDuration(props, "b"));
+        assertEquals(0, readDuration(props, "c"));
+        assertEquals(0, readDuration(props, "d"));
+    }
+
+    public int readDuration(Properties props, String name) {
+        // 기본 구현
+//        String value = props.getProperty(name);
+//        if (value != null) {
+//            try {
+//                int i = Integer.parseInt(value);
+//                if (i > 0) {
+//                    return i;
+//                }
+//            } catch (NumberFormatException numberFormatException) {
+//
+//            }
+//        }
+//        return 0;
+
+        // Optional 활용
+        return Optional.ofNullable(props.getProperty(name))
+                .flatMap(Chapter11::stringToInt)
+                .filter(i -> i > 0)
+                .orElse(0);
+    }
 
 }

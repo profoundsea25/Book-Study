@@ -296,4 +296,51 @@ public class Chapter12 {
      * 12.3 다양한 시간대와 캘린더 활용 방법
      */
 
+    /* java.time.ZoneId
+        - 새로운 날짜와 시간 API를 통해 시간대를 간단하게 처리할 수 있다.
+        - 불변 클래스
+     */
+
+    /* 12.3.1 시간대 이용하기
+        - `ZoneRule` 클래스에서 시간대 규칙 집합을 정의한다. (약 40개)
+        - `ZoneId`의 `getRule` 메서드를 해당 시간대의 규정을 획득할 수 있다.
+        - 지역 ID는 `{지역}/{도시}` 형식이다.
+        - 기존에 쓰이던 `TimeZone` 객체를 `ZoneId` 객체로 바꿀 수 있다.
+        - `ZoneId`를 얻은 후에는 LocalDate, LocalDateTime, Instant 등을 이용해서 ZonedDateTime 인스턴스로 변환할 수 있다.
+            - `ZonedDateTime`은 지정한 시간대에 상대적인 시점을 표현한다.
+     */
+    @Test
+    void zoneIdExample() {
+        ZoneId zoneId = ZoneId.of("Europe/Rome");
+
+        LocalDate date = LocalDate.of(2014, Month.MARCH, 18);
+        ZonedDateTime zdt1 = date.atStartOfDay(zoneId);
+        LocalDateTime dateTime = LocalDateTime.of(2014, Month.MARCH, 18, 13, 45);
+        ZonedDateTime zdt2 = dateTime.atZone(zoneId);
+        Instant instant = Instant.now();
+        ZonedDateTime zdt3 = instant.atZone(zoneId);
+
+        LocalDateTime timeFromInstant = LocalDateTime.ofInstant(instant, zoneId);
+    }
+
+    /* 12.3.2 UTC/Greenwich 기준의 고정 오프셋
+        - `ZoneId`의 서브클래스인 `ZoneOffset` 클래스로 런던의 그리니치 0도 자오선과 시간값의 차이를 표현할 수 있다.
+     */
+    @Test
+    void zoneOffsetExample() {
+        // `ZoneOffset`은 서머타임을 제대로 처리할 수 없어 권장하지 않음
+        ZoneOffset newYorkOffset = ZoneOffset.of("-05:00");
+
+        LocalDateTime dateTime = LocalDateTime.of(2014, Month.MARCH, 18, 13, 45);
+        OffsetDateTime dateTimeInNewYork = OffsetDateTime.of(dateTime, newYorkOffset);
+    }
+
+    /* 12.3.3 대안 캘린더 시스템 사용하기
+        - 추가로 4개의 캘린더 시스템을 제공
+            - ThaiBuddhistDate, MinguoDate, JapaneseDate, HijrahDate 등
+        - `ChronoLocalDate` 인터페이스를 구현
+            - `LocalDate`도 이 인터페이스를 구현함
+        - 그러나 날짜와 시간 API의 설계자는 `LocalDate`를 사용하라고 권장
+     */
+
 }

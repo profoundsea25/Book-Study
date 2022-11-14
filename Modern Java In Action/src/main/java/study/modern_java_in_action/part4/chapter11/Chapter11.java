@@ -1,6 +1,5 @@
 package study.modern_java_in_action.part4.chapter11;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import study.modern_java_in_action.part4.chapter11.ex_11_1.Car1;
 import study.modern_java_in_action.part4.chapter11.ex_11_1.Insurance1;
@@ -9,10 +8,8 @@ import study.modern_java_in_action.part4.chapter11.ex_11_2.Car2;
 import study.modern_java_in_action.part4.chapter11.ex_11_2.Insurance2;
 import study.modern_java_in_action.part4.chapter11.ex_11_2.Person2;
 
-import javax.swing.text.html.Option;
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -164,11 +161,11 @@ public class Chapter11 {
             - `Optional`에 값이 있다면 그 값을 반환한다.
      */
     public String getCarInsuanceName(Optional<Person2> person) {
-        return person.flatMap(Person2::getCar)
+        return person
+                .flatMap(Person2::getCar)
                 .flatMap(Car2::getInsurance)
                 .map(Insurance2::getName)
                 .orElse("Unknown");
-
     }
 
     /* 도메인 모델에 `Optional`을 사용했을 때 데이터를 직렬화할 수 없는 이유

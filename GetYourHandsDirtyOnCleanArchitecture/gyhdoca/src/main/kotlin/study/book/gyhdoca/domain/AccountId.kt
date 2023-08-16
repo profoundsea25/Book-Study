@@ -1,5 +1,5 @@
 package study.book.gyhdoca.domain
 
-class AccountId {
-
-}
+data class AccountId(
+    val value: Long
+)

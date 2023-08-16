@@ -3,7 +3,7 @@ package study.book.gyhdoca.domain
 import java.math.BigInteger
 
 data class Money(
-    private val amount: BigInteger
+    val amount: BigInteger
 ) {
     fun isPositiveOrZero(): Boolean {
         return this.amount >= BigInteger.ZERO

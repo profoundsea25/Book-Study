@@ -2,16 +2,40 @@ package study.book.gyhdoca.domain
 
 import java.time.LocalDateTime
 
-class Account(
-    private val id: AccountId,
+class Account private constructor(
+    val id: AccountId?,
+    val activityWindow: ActivityWindow,
     private val baselineBalance: Money,
-    private val activityWindow: ActivityWindow,
 ) {
+    companion object {
+        fun withoutId(
+            baselineBalance: Money,
+            activityWindow: ActivityWindow
+        ): Account {
+            return Account(
+                id = null,
+                baselineBalance = baselineBalance,
+                activityWindow = activityWindow
+            )
+        }
+
+        fun withId(
+            accountId: AccountId,
+            baselineBalance: Money,
+            activityWindow: ActivityWindow
+        ): Account {
+            return Account(
+                id = accountId,
+                baselineBalance = baselineBalance,
+                activityWindow = activityWindow
+            )
+        }
+    }
 
     fun calculateBalance(): Money {
         return Money.add(
             this.baselineBalance,
-            this.activityWindow.calculateBalance(this.id)
+            this.activityWindow.calculateBalance(this.id!!)
         )
     }
 
@@ -21,11 +45,11 @@ class Account(
         }
 
         val withdrawal: Activity = Activity(
-            this.id,
-            this.id,
-            targetAccountId,
-            LocalDateTime.now(),
-            money
+            ownerAccountId = this.id!!,
+            sourceAccountId = this.id,
+            targetAccountId = targetAccountId,
+            timestamp = LocalDateTime.now(),
+            money = money
         )
         this.activityWindow.addActivity(withdrawal)
         return true
@@ -40,11 +64,11 @@ class Account(
 
     fun deposit(money: Money, sourceAccountId: AccountId): Boolean {
         val deposit: Activity = Activity(
-            this.id,
-            sourceAccountId,
-            this.id,
-            LocalDateTime.now(),
-            money
+            ownerAccountId = this.id!!,
+            sourceAccountId = sourceAccountId,
+            targetAccountId = this.id,
+            timestamp = LocalDateTime.now(),
+            money = money
         )
         this.activityWindow.addActivity(deposit)
         return true

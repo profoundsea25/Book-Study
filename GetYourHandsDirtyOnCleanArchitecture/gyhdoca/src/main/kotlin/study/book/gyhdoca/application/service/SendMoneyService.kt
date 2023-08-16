@@ -1,13 +1,11 @@
 package study.book.gyhdoca.application.service
 
-import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import study.book.gyhdoca.application.port.`in`.SendMoneyCommand
 import study.book.gyhdoca.application.port.`in`.SendMoneyUseCase
 import study.book.gyhdoca.application.port.out.LoadAccountPort
 import study.book.gyhdoca.application.port.out.UpdateAccountStatePort
 
-@Service
 @Transactional
 class SendMoneyService(
     private val loadAccountPort: LoadAccountPort,

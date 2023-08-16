@@ -49,7 +49,4 @@ class Account(
         this.activityWindow.addActivity(deposit)
         return true
     }
-
-
-
 }

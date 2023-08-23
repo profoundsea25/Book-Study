@@ -37,7 +37,7 @@ class AccountMapper {
 
     fun mapToJpaEntity(activity: Activity): ActivityJpaEntity {
         return ActivityJpaEntity(
-            activity.id!!.value,
+            activity.id?.value ?: 0,
             activity.timestamp,
             activity.ownerAccountId.value,
             activity.sourceAccountId.value,

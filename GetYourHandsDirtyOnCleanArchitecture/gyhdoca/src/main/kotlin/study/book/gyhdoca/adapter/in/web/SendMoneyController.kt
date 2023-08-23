@@ -1,12 +1,10 @@
 package study.book.gyhdoca.adapter.`in`.web
 
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.PathVariable
-import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.RequestBody
-import org.springframework.web.bind.annotation.RestController
-import study.book.gyhdoca.application.port.`in`.GetAccountBalanceQuery
+import org.springframework.web.bind.annotation.*
+import study.book.gyhdoca.application.port.`in`.SendMoneyCommand
 import study.book.gyhdoca.application.port.`in`.SendMoneyUseCase
+import study.book.gyhdoca.domain.AccountId
+import study.book.gyhdoca.domain.Money
 
 @RestController
 class SendMoneyController(
@@ -38,6 +36,11 @@ class SendMoneyController(
         @PathVariable("targetAccountId") targetAccountId: Long,
         @PathVariable("amount") amount: Long,
     ) {
-        TODO()
+        val command: SendMoneyCommand = SendMoneyCommand(
+            sourceAccountId = AccountId(sourceAccountId),
+            targetAccountId = AccountId(targetAccountId),
+            money = Money.of(amount)
+        )
+        sendMoneyUseCase.sendMoney(command = command)
     }
 }

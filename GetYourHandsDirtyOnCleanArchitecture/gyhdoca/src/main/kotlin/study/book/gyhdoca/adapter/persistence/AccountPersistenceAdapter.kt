@@ -23,7 +23,7 @@ class AccountPersistenceAdapter(
     }
 
     override fun updateActivities(account: Account) {
-        account.activityWindow.getActivities().asSequence()
+        account.activityWindow.activities.asSequence()
             .filter { it.id == null }
             .forEach { activityRepository.save(accountMapper.mapToJpaEntity(it)) }
     }

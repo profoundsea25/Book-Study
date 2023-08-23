@@ -4,38 +4,35 @@ import java.time.LocalDateTime
 import java.util.*
 
 data class ActivityWindow(
-    private val activities: MutableList<Activity>
+    private val _activities: MutableList<Activity>
 ){
     constructor(vararg activities: Activity): this(activities.toMutableList())
 
     fun getStartTimestamp(): LocalDateTime {
-        return activities.minOf { it.timestamp }
+        return _activities.minOf { it.timestamp }
     }
 
     fun getEndTimestamp(): LocalDateTime {
-        return activities.maxOf { it.timestamp }
+        return _activities.maxOf { it.timestamp }
     }
 
     fun calculateBalance(accountId: AccountId): Money {
-        val depositBalance: Money = activities.asSequence()
+        val depositBalance: Money = _activities.asSequence()
             .filter { it.targetAccountId == accountId }
             .map { it.money }
-            .reduce { a: Money, b: Money -> Money.add(a, b) }
+            .reduceOrNull(Money::add) ?: Money.ZERO
 
-        val withdrawalBalance: Money = activities.asSequence()
+        val withdrawalBalance: Money = _activities.asSequence()
             .filter { it.sourceAccountId == accountId }
             .map { it.money }
-            .reduce { a: Money, b: Money -> Money.add(a, b) }
+            .reduceOrNull(Money::add) ?: Money.ZERO
 
         return Money.add(depositBalance, withdrawalBalance.negate())
     }
 
-    fun getActivities(): List<Activity> {
-        return Collections.unmodifiableList(this.activities)
-    }
+    val activities: List<Activity> = Collections.unmodifiableList(this._activities)
 
     fun addActivity(activity: Activity) {
-        this.activities.add(activity)
+        this._activities.add(activity)
     }
-
 }

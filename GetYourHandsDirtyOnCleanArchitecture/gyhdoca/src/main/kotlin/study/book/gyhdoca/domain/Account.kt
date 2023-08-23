@@ -2,7 +2,7 @@ package study.book.gyhdoca.domain
 
 import java.time.LocalDateTime
 
-class Account private constructor(
+data class Account private constructor(
     val id: AccountId?,
     val activityWindow: ActivityWindow,
     private val baselineBalance: Money,

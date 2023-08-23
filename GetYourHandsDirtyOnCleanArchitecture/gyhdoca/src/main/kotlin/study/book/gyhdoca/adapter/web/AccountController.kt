@@ -5,6 +5,7 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RestController
 import study.book.gyhdoca.application.port.`in`.SendMoneyCommand
 import study.book.gyhdoca.application.port.`in`.SendMoneyUseCase
+import study.book.gyhdoca.domain.AccountId
 import study.book.gyhdoca.domain.Money
 
 /**

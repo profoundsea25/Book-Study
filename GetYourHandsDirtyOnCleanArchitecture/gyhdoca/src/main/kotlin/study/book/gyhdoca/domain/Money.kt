@@ -48,7 +48,7 @@ data class Money(
             return Money(a.amount.add(b.amount))
         }
 
-        fun substract(a: Money, b: Money): Money {
+        fun subtract(a: Money, b: Money): Money {
             return Money(a.amount.subtract(b.amount))
         }
     }

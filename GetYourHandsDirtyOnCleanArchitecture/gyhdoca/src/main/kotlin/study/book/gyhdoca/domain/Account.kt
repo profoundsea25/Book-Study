@@ -56,10 +56,8 @@ data class Account private constructor(
     }
 
     private fun mayWithdraw(money: Money): Boolean {
-        return Money.add(
-            this.calculateBalance(),
-            money.negate()
-        ).isPositive()
+        return Money.add(this.calculateBalance(), money.negate())
+            .isPositiveOrZero()
     }
 
     fun deposit(money: Money, sourceAccountId: AccountId): Boolean {

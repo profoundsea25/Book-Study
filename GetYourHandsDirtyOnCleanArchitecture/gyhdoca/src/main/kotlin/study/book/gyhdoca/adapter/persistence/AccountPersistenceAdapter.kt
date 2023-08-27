@@ -1,14 +1,14 @@
 package study.book.gyhdoca.adapter.persistence
 
 import jakarta.persistence.EntityNotFoundException
-import org.springframework.stereotype.Component
 import study.book.gyhdoca.application.port.out.LoadAccountPort
 import study.book.gyhdoca.application.port.out.UpdateAccountStatePort
+import study.book.gyhdoca.common.PersistenceAdapter
 import study.book.gyhdoca.domain.Account
 import study.book.gyhdoca.domain.AccountId
 import java.time.LocalDateTime
 
-@Component
+@PersistenceAdapter
 class AccountPersistenceAdapter(
     private val accountRepository: AccountRepository,
     private val activityRepository: ActivityRepository,

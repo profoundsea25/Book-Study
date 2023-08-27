@@ -1,8 +1,8 @@
 package study.book.gyhdoca.application.port.`in`
 
+import study.book.gyhdoca.common.SelfValidating
 import study.book.gyhdoca.domain.AccountId
 import study.book.gyhdoca.domain.Money
-import study.book.gyhdoca.shared.SelfValidating
 
 data class SendMoneyCommand(
     val sourceAccountId: AccountId,

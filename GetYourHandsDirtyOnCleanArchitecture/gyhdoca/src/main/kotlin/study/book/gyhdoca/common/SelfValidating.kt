@@ -1,4 +1,4 @@
-package study.book.gyhdoca.shared
+package study.book.gyhdoca.common
 
 import jakarta.validation.ConstraintViolation
 import jakarta.validation.ConstraintViolationException

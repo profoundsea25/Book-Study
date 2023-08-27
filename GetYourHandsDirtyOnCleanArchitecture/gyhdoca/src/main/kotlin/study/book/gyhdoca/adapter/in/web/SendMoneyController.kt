@@ -3,9 +3,11 @@ package study.book.gyhdoca.adapter.`in`.web
 import org.springframework.web.bind.annotation.*
 import study.book.gyhdoca.application.port.`in`.SendMoneyCommand
 import study.book.gyhdoca.application.port.`in`.SendMoneyUseCase
+import study.book.gyhdoca.common.WebAdapter
 import study.book.gyhdoca.domain.AccountId
 import study.book.gyhdoca.domain.Money
 
+@WebAdapter
 @RestController
 class SendMoneyController(
     private val sendMoneyUseCase: SendMoneyUseCase,

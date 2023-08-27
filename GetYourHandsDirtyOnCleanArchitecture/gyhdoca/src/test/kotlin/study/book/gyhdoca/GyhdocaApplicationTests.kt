@@ -1,11 +1,18 @@
 package study.book.gyhdoca
 
+import org.junit.jupiter.api.Test
 import org.mockito.ArgumentCaptor
 import org.mockito.ArgumentMatchers
+import org.springframework.boot.test.context.SpringBootTest
 import study.book.gyhdoca.domain.*
 import java.time.LocalDateTime
 
-class GyhdocaApplicationTests
+@SpringBootTest
+class GyhdocaApplicationTests {
+    @Test
+    fun contextLoads() {
+    }
+}
 
 val testActivity: Activity = Activity(
     ownerAccountId = AccountId(42L),
